@@ -32,8 +32,6 @@ GEM
     rack-session (2.1.1)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
-    rackup (2.2.1)
-      rack (>= 3)
     ruby2_keywords (0.0.5)
     sawyer (0.9.2)
       addressable (>= 2.3.5)
@@ -56,8 +54,7 @@ PLATFORMS
 DEPENDENCIES
   dotenv
   octokit
-  puma (~> 6.6)
-  rackup (~> 2.2)
+  puma
   sinatra
 
 RUBY VERSION

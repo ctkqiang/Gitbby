@@ -63,4 +63,5 @@ module Gitbby
   end
 end
 
-Gitbby::App.run! if __FILE__ == $PROGRAM_NAME
+Gitbby::App.run! host: '0.0.0.0', port: ENV.fetch("PORT", 3000).to_i if __FILE__ == $PROGRAM_NAME
+
