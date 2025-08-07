@@ -18,13 +18,13 @@ module Gitbby
         title = @payload['pull_request']['title']
         body = @payload['pull_request']['body']
 
-        puts "Repository: #{repository}"
-        puts "Pull Request Number: #{pull_request_number}"
-        puts "Title: #{title}"
-        puts "Body: #{body}"
+        puts "仓库: #{repository}"
+        puts "拉取请求编号: #{pull_request_number}"
+        puts "标题: #{title}"
+        puts "内容: #{body}"
 
-        # @TODO Handle custom logic and message 
-        Gitbby::Client.instance.client.add_comment(repository, pull_request_number, "Thanks for opening this pull request! I am Looking into it")
+        # @TODO 处理自定义逻辑和消息
+        Gitbby::Client.instance.client.add_comment(repository, pull_request_number, "感谢您提交此拉取请求！我正在查看中")
 
       end
     

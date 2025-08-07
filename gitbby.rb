@@ -1,4 +1,3 @@
-# gitbby.rb — 完整 debug 版本
 require 'sinatra/base'
 require 'json'
 require 'dotenv/load'
@@ -13,47 +12,46 @@ module Gitbby
       request.body.rewind
       raw = request.body.read
 
-      # 1. 打印所有 Request 头确认签名是否送达
-      puts "\n=== HEADERS ==="
+
+      puts "\n=== 请求头 ==="
       request.env.each { |k,v| puts "#{k}: #{v}" if k.start_with?('HTTP_') }
 
-      # 2. 打印 raw body
-      puts "\n=== RAW BODY ==="
-      puts raw[0..500]  # 打前500字符
 
-      # 3. 签名校验
+      puts "\n=== 原始请求体 ==="
+      puts raw[0..500]  # 打印前500字符
+
+
       secret = ENV['GITHUB_WEBHOOK_SECRET']
       sig_header = request.env['HTTP_X_HUB_SIGNATURE_256']
       computed = 'sha256=' + OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha256'), secret, raw)
 
-      puts "\n=== SIGNATURE CHECK ==="
-      puts "Secret from .env: #{secret.inspect}"
-      puts "Signature header: #{sig_header.inspect}"
-      puts "Computed sig   : #{computed.inspect}"
+      puts "\n=== 签名校验 ==="
+      puts ".env 中的密钥: #{secret.inspect}"
+      puts "签名头: #{sig_header.inspect}"
+      puts "计算出的签名: #{computed.inspect}"
 
       unless sig_header && secret && Rack::Utils.secure_compare(computed, sig_header)
-        puts ">>> Signature mismatch — halting with 403"
-        halt 403, 'Invalid signature'
+        puts ">>> 签名不匹配 — 返回 403 错误"
+        halt 403, '无效签名'
       end
 
-      # 4. GitHub Event 验证
+
       event = request.env['HTTP_X_GITHUB_EVENT']
-      puts "\n=== EVENT === #{event.inspect}"
+      puts "\n=== 事件 === #{event.inspect}"
       unless event
-        halt 403, 'Missing X-GitHub-Event'
+        halt 403, '缺少 X-GitHub-Event'
       end
 
-      # 5. 解析 JSON Body
       begin
         payload = JSON.parse(raw)
       rescue JSON::ParserError => e
-        puts "JSON parse error: #{e.message}"
-        halt 400, 'Invalid JSON'
+        puts "JSON 解析错误: #{e.message}"
+        halt 400, '无效 JSON'
       end
 
-      # 6. ping 或分发处理
+
       if event == 'ping'
-        puts "ping event processed"
+        puts "ping 事件已处理"
         return 200
       end
 

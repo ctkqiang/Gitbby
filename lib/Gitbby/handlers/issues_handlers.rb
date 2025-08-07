@@ -18,13 +18,13 @@ module Gitbby
         title = @payload['issue']['title']
         body = @payload['issue']['body']
 
-        puts "Repository: #{repository}"
-        puts "Issue Number: #{issue_number}"
-        puts "Title: #{title}"
-        puts "Body: #{body}"	
+        puts "仓库: #{repository}"
+        puts "问题编号: #{issue_number}"
+        puts "标题: #{title}"
+        puts "内容: #{body}"	
 
-        # @TODO Handle custom logic and message 
-        Gitbby::Client.instance.client.add_comment(repository, issue_number, "Thanks for opening this issue! I am Looking into it")
+        # @TODO 处理自定义逻辑和消息
+        Gitbby::Client.instance.client.add_comment(repository, issue_number, "感谢您提交此问题！我正在查看中")
 
       end
     
