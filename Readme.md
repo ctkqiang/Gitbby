@@ -1,72 +1,164 @@
-# Gitbby - GitHub Webhook 处理器
+# 🌸 Gitbby - GitHub Webhook 消息监听器（Ruby + Sinatra）
 
-## 这是什么？
+> 轻量、模块化、高扩展性的 GitHub Webhook 事件处理器，专为 Pull Request 和 Issue 场景设计。
 
-Gitbby 是一个简单的 Ruby 应用程序，旨在作为 GitHub Webhook 的处理器。它能够监听 GitHub 仓库中的特定事件（例如，当一个新的 Issue 或 Pull Request 被打开时），并自动执行预定义的操作，例如在 Issue 或 Pull Request 上添加评论。
+---
 
-## 用法
+## 📌 项目简介
 
-### 1. 克隆仓库
+**Gitbby** 是一个用 Ruby 编写的 Webhook 接收处理器，基于 Sinatra 框架实现。它监听来自 GitHub 的事件（如新建 PR / Issue），并立即在本地输出消息，供你接入后续自动化逻辑。
 
-首先，将此仓库克隆到您的本地机器：
+典型用途包括：
+
+- PR/Issue 创建时第一时间通知
+- 自定义自动回复逻辑
+- 接入本地 CI / 消息通知 / 数据分析流程
+
+> 灵活性强、部署简单，是构建开发者工具链的绝佳基础设施组件。
+
+---
+
+## 🧱 项目结构
+
+```bash
+Gitbby/
+├── app/
+│   ├── handlers/              # 每类事件的独立处理器
+│   │   ├── issue_handler.rb
+│   │   └── pull_request_handler.rb
+│   └── router.rb              # 路由层：按事件分发到处理器
+├── main.rb                    # Sinatra 主程序
+├── Gemfile                    # Ruby 依赖
+└── .env                       # 本地配置（忽略版本控制）
+````
+
+---
+
+## 🚀 快速开始
+
+### 1️⃣ 克隆项目
 
 ```bash
 git clone https://github.com/ctkqiang/Gitbby.git
 cd Gitbby
 ```
 
-### 2. 安装依赖
-
-该项目使用 Bundler 管理 Ruby 依赖。请确保您已安装 Bundler，然后运行以下命令安装所需的 gem：
+### 2️⃣ 安装依赖
 
 ```bash
 bundle install
 ```
 
-### 3. 配置 GitHub Token
+### 3️⃣ 配置环境变量
 
-Gitbby 使用 GitHub Personal Access Token 来与 GitHub API 进行交互（例如，添加评论）。您需要创建一个具有适当权限（例如 `repo` 权限）的 GitHub Personal Access Token，并将其设置为名为 `GITHUB_TOKEN` 的环境变量。
+创建 `.env` 文件并设置 GitHub Token：
 
-**在 Windows 上设置环境变量：**
+```env
+GITHUB_TOKEN=ghp_你的GitHub个人访问令牌
+```
+
+* Token 需要具备 `repo` 权限（用于未来调用 GitHub API）
+* 建议使用 [dotenv](https://github.com/bkeepers/dotenv) 管理配置，避免硬编码
+
+### 4️⃣ 启动本地服务
 
 ```bash
-set GITHUB_TOKEN=您的GitHub个人访问令牌
+ruby gitbby.rb
 ```
 
-**在 macOS/Linux 上设置环境变量：**
+默认监听地址为：`http://localhost:9292`
+
+---
+
+## 🌐 配置公网访问（Ngrok）
 
 ```bash
-export GITHUB_TOKEN=您的GitHub个人访问令牌
+ngrok authtoken <你的Ngrok Token>
+ngrok http 9292
 ```
 
-或者，您可以在项目根目录下创建一个 `.env` 文件（已在 `.gitignore` 中忽略），并添加以下内容：
+将得到一个公网地址（如 `https://xxxxx.ngrok.io`），用于 GitHub Webhook。
 
+---
+
+## 🪝 GitHub Webhook 配置指南
+
+1. 打开 GitHub 仓库 → Settings → Webhooks
+
+2. 添加新的 Webhook
+
+3. Payload URL 填写：
+
+   ```
+   https://<你的-ngrok-url>/githook
+   ```
+
+4. Content type 选择 `application/json`
+
+5. 勾选事件：
+
+   * Issues
+   * Pull requests
+
+6. 保存并测试触发 🎯
+
+---
+
+## 🛠️ 自定义事件逻辑
+
+你可以在以下路径中添加或扩展业务逻辑：
+
+* `app/handlers/issue_handler.rb`
+* `app/handlers/pull_request_handler.rb`
+
+它们将会根据事件被自动调用，例如：
+
+```ruby
+module Gitbby
+  class IssueHandler
+    def self.handle(payload)
+      puts "[Issue] New: #{payload['issue']['title']}"
+    end
+  end
+end
 ```
-GITHUB_TOKEN=您的GitHub个人访问令牌
-```
 
-`dotenv` gem 会自动加载此文件中的环境变量。
+将来可添加逻辑如：
 
-### 4. 运行应用程序
+* 自动评论
+* 打标签
+* 分配 reviewer
+* 数据存储等
 
-Gitbby 应用程序通常会作为一个 Sinatra 应用程序运行，监听来自 GitHub 的 Webhook 请求。您可以使用 `rackup` 来启动它：
+---
 
-```bash
-rackup
-```
+## 🧩 架构原则（可拓展）
 
-这将启动一个本地服务器（通常在 `http://localhost:9292`），等待 GitHub Webhook 的传入请求。
+| 层级            | 说明                  |
+| ------------- | ------------------- |
+| Sinatra 控制器   | 接收并解析 Webhook 请求    |
+| Router 分发器    | 根据事件类型进行 handler 分发 |
+| Handlers      | 每类事件的业务处理逻辑         |
+| GitHub Client | 可选，用于后续 API 操作（评论等） |
 
-### 5. 配置 GitHub Webhook
+---
 
-最后一步是在您的 GitHub 仓库中配置 Webhook，使其指向您的 Gitbby 应用程序。
+## 🧪 本地测试
 
-1.  导航到您的 GitHub 仓库设置。
-2.  点击“Webhooks”选项卡。
-3.  点击“Add webhook”。
-4.  在“Payload URL”字段中，输入您的 Gitbby 应用程序的 URL。如果您在本地运行，并且可以通过公共 URL 访问（例如，使用 ngrok），则输入该 URL。例如：`http://your-public-url/webhook`。
-5.  将“Content type”设置为 `application/json`。
-6.  选择您希望 Gitbby 监听的事件。根据您当前的处理器，您可能需要选择“Issues”和“Pull requests”事件。
-7.  点击“Add webhook”。
+1. 手动发起一个 PR 或 Issue
+2. 查看终端输出是否正确触发对应事件
+3. 后续可以 mock payload 调试各类逻辑
 
-现在，当您配置的事件在您的 GitHub 仓库中发生时，GitHub 将向您的 Gitbby 应用程序发送一个 Webhook 请求，Gitbby 将处理它并执行相应的操作。
+---
+
+## ✅ 进阶功能建议（Todo）
+
+* [ ] 支持更多 GitHub 事件类型（如 push、comments）
+* [ ] 增加测试用例（RSpec or Minitest）
+* [ ] GitHub Action 自动部署
+
+---
+
+有问题欢迎提 Issue，一起打造 Ruby 世界最甜 Webhook 核心 💘
+
+---
