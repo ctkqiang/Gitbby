@@ -2,9 +2,15 @@
 
 source "https://rubygems.org"
 
+ruby '3.2.2' 
+
+# Core dependencies
 gem 'sinatra'
 gem 'octokit'
 gem 'dotenv'
 
-gem "rackup", "~> 2.2"
+# Web server
 gem "puma", "~> 6.6"
+
+# Dev utils (可选)
+gem "rackup", "~> 2.2"

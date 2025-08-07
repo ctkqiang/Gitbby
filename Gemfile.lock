@@ -50,7 +50,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-24
-  x64-mingw-ucrt
+  ruby
   x86_64-linux
 
 DEPENDENCIES
@@ -61,7 +61,7 @@ DEPENDENCIES
   sinatra
 
 RUBY VERSION
-   ruby 3.4.4p34
+   ruby 3.2.2p53
 
 BUNDLED WITH
    2.7.1
